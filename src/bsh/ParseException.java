@@ -167,7 +167,7 @@ public final class ParseException extends EvalError {
   public String getMessage( boolean debug ) {
   // End BeanShell Modification - added debug param
     if (!specialConstructor) {
-      return super.getRawMessage();
+      return super.getMessage();
     }
     String expected = "";
     int maxSize = 0;

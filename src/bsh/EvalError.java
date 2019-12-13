@@ -51,7 +51,7 @@ public class EvalError extends Exception
 	// Note: no way to mutate the Throwable message, must maintain our own
 	private String message;
 
-	private final CallStack callstack;
+	private CallStack callstack;
 
 	public EvalError( String s, SimpleNode node, CallStack callstack, Throwable cause ) {
 		this(s,node,callstack);
@@ -59,16 +59,17 @@ public class EvalError extends Exception
 	}
 
 	public EvalError( String s, SimpleNode node, CallStack callstack ) {
-		this.message = s;
+		setMessage(s);
 		this.node = node;
 		// freeze the callstack for the stack trace.
-		this.callstack = callstack==null ? null : callstack.copy();
+		if ( callstack != null )
+			this.callstack = callstack.copy();
 	}
 
 	/**
 		Print the error with line number and stack trace.
 	*/
-	public String getMessage() 
+	public String toString() 
 	{
 		String trace;
 		if ( node != null )
@@ -82,7 +83,7 @@ public class EvalError extends Exception
 		if ( callstack != null )
 			trace = trace +"\n" + getScriptStackTrace();
 
-		return getRawMessage() + trace;
+		return getMessage() + trace;
 	}
 
 	/**
@@ -152,12 +153,17 @@ public class EvalError extends Exception
 		return trace;
 	}
 
-	public String getRawMessage() { return message; }
+	/**
+		@see #toString() for a full display of the information
+	*/
+	public String getMessage() { return message; }
+
+	public void setMessage( String s ) { message = s; }
 
 	/**
 		Prepend the message if it is non-null.
 	*/
-	private void prependMessage( String s ) 
+	protected void prependMessage( String s ) 
 	{ 
 		if ( s == null )
 			return;
@@ -168,5 +174,73 @@ public class EvalError extends Exception
 			message = s + " : "+ message;
 	}
 
+   /**
+    * Decode traceback information in a tidy format
+    */
+   public String getTidyScriptStackTrace() {
+      StringBuilder sb = new StringBuilder();
+      getTidyScriptStackTrace(this, sb);
+      return sb.toString();
+   }
+
+   /**
+    * Recursively process tracebacks
+    */
+   private static void getTidyScriptStackTrace(Throwable th, StringBuilder sb) {
+
+      /*
+       * Quit if out of the bsh error chain
+       */
+      if (!(th instanceof EvalError))
+	 return;
+
+      EvalError ee = (EvalError) th;
+
+      /*
+       * Recurse to reverse the order of messages (last first)
+       */
+      Throwable target = null;
+      if (ee instanceof TargetError) {
+	 target = ((TargetError)ee).getTarget();
+	 getTidyScriptStackTrace(target, sb);
+      }
+
+      /*
+       * In case we are at a terminal exception and getting in to an application error, 
+       * add the final location information
+       */
+      if (!(target instanceof EvalError)) {
+	 SimpleNode node = ee.node;
+	 if (node != null) {
+	    sb.append("\n    at ")
+	       .append(node.getSourceFile()).append(":").append(node.getLineNumber())
+	       .append("  '").append(node.getText()).append("'");
+	 }
+      }
+
+      /*
+       * In case we are lost...?
+       */
+      if (ee.callstack == null) {
+	 sb.append("\n   <Unknown>");
+	 return;
+      }
+
+      /*
+       * Work through the call stack and add location info
+       */
+      CallStack stack = ee.callstack.copy();
+      while (stack.depth() > 0) {
+	 NameSpace ns = stack.pop();
+	 SimpleNode node = ns.getNode();
+
+	 if (ns.isMethod && node != null )
+	    sb.append("\n    at ")
+	       .append(node.getSourceFile()).append(":").append(node.getLineNumber())
+	       .append("  '").append(node.getText()).append("'");
+      }
+
+      return;
+   }
 }
 
