@@ -516,8 +516,8 @@ public class Interpreter
 			}
 			catch(TargetError e)
 			{
-				error("// Uncaught Exception: " + e );
-				if ( e.inNativeCode() )
+                           error("// Uncaught Exception: " + getAllCauses(e) );
+				if ( DEBUG && e.inNativeCode() )
 					e.printStackTrace( DEBUG, err );
 				if(!interactive)
 					eof = true;
@@ -785,6 +785,16 @@ public class Interpreter
 		}
 	}
 
+   private String getAllCauses(Throwable th) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(th.toString());
+      while(th.getCause() != null) {
+	 th = th.getCause();
+	 sb.append("/nCaused by: ").append(th.toString());
+      }
+      return sb.toString();
+   }
+   
 	// ConsoleInterface
 	// The interpreter reflexively implements the console interface that it 
 	// uses.  Should clean this up by using an inner class to implement the
