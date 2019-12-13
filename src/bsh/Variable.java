@@ -39,7 +39,7 @@ public class Variable implements java.io.Serializable
 	/**
 		@param value may be null if this 
 	*/
-	Variable( String name, Class type, Object value, Modifiers modifiers )
+	protected Variable( String name, Class type, Object value, Modifiers modifiers )
 		throws UtilEvalError
 	{
 

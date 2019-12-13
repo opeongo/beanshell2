@@ -20,6 +20,7 @@
 	<property name="Specification-Version" value="${version}" />
 	<property name="Specification-Vendor" value="http://www.beanshell.org/" />
 	<property name="Implementation-Vendor" value="https://github.com/pejobo/beanshell2" />
+        <property name="javabootlibs" value="C:/Program Files/Java/jre1.8.0_201/lib"/>
 
 	<property name="src-dir" value="src" />
 	<property name="build-dir" value="classes" />
@@ -29,6 +30,7 @@
 	<property name="test-src-dir" value="tests/src" />
 	<property name="javadoc-dir" value="javadoc" />
 	<property name="bsf-src-dir" value="bsf/src" />
+	<property name="engine-src-dir" value="engine/src" />
 
 	<property name="javacc-lib" 
 		value="${lib-dir}/javacc.jar"/>
@@ -54,6 +56,10 @@
 	<property name="exclude-bsf" 
 		value="bsh/util/BeanShellBSFEngine.java,TestBshBSF.java"/>
 
+	<!-- Uncomment to build without making the javax.script (JSR223) adapter 
+	<property name="exclude-engine" value="bsh/engine/**"/>
+	-->
+
 	<!-- Uncomment to build without the ASM class generator code.
 	<property name="exclude-classgen" 
 		value="bsh/org/objectweb/asm/**,bsh/ClassGeneratorImpl.java,bsh/ClassGeneratorUtil.java,bsh/DelayedEvalBshMethod.java"/>
@@ -77,7 +83,7 @@
 	<!--  Add up all of the excludes -->
 	<!-- how do I add strings to break this long line? -->
 	<property name="excludes" 
-		value="${exclude-bsf},${excludes-legacy}"/>
+		value="${exclude-bsf},${exclude-engine},${excludes-legacy}"/>
 
 	<!-- JARs -->
 	<property name="javadoc-zip" value="${dist-dir}/bsh-${version}-javadoc.zip"/>
@@ -159,6 +165,7 @@
 			excludes="${excludes},**/bak/**"
 			source="${ant.build.javac.source}"
 			target="${ant.build.javac.target}"
+	                bootclasspathref="javabootclasspath"
 		>
 			<classpath>
 				<fileset refid="lib-fileset"/>
@@ -184,7 +191,7 @@
 		<!-- exclude the ${excludes} as well as anything under a "bak" dir -->
 		<!--compiler="${build-compiler}"-->
 		
-		<javac srcdir="${src-dir}:${bsf-src-dir}"
+		<javac srcdir="${src-dir}:${bsf-src-dir}:${engine-src-dir}"
 			destdir="${build-dir}"
 			deprecation="${deprecation}"
 			optimize="on"
@@ -193,6 +200,7 @@
 			excludes="${excludes},**/bak/**"
 			source="${ant.build.javac.source}"
 			target="${ant.build.javac.target}"
+	                bootclasspathref="javabootclasspath"
 		>
 			<classpath>
 				<fileset refid="lib-fileset"/>
@@ -207,6 +215,7 @@
 				<patternset refid="util-lib-patternset"/>
 			</fileset>
 		</copy>
+
 		<tstamp>
 			<format property="DATE" pattern="yyyy-MM-dd hh:mm:ss" />
 		</tstamp>
@@ -266,7 +275,13 @@
 		<mkdir dir="${build-dir}" />
 	</target>
 
-	<!-- Begin: Filesets -->
+        <path id="javabootclasspath">
+          <pathelement path="${javabootlibs}/rt.jar"/>
+          <pathelement path="${javabootlibs}/jce.jar"/>
+          <pathelement path="${javabootlibs}/jfxrt.jar"/>
+        </path>
+        
+        <!-- Begin: Filesets -->
 
 	<fileset id="lib-fileset" dir="${lib-dir}">
 		<patternset>
@@ -310,6 +325,13 @@
 		</patternset>
 	</fileset>
 
+	<fileset id="engine-fileset" dir="${build-dir}">
+		<patternset>
+			<include name="bsh/engine/**.class"/>
+			<include name="META-INF/services/javax.script*"/>
+		</patternset>
+	</fileset>
+
 	<fileset id="classgen-fileset" dir="${build-dir}">
 		<patternset>
 			<include name="bsh/ClassGeneratorImpl*.class"/>
@@ -345,13 +367,6 @@
 	<!-- Jar targets -->
 
 	<target name="jarcore" depends="compile,_distdir">
-        <fail message="Please use ant 1.8">
-            <condition>
-                <not>
-                    <contains string="${ant.version}" substring="1.8"/>
-                </not>
-            </condition>
-        </fail>
     <delete file="${core-jar}"/>
 		<jar jarfile="${core-jar}">
 			<manifest>
@@ -362,7 +377,6 @@
 				<attribute name="Implementation-Version" value="${version} ${DATE}" />
 				<attribute name="Implementation-Vendor" value="${Implementation-Vendor}" />
 			</manifest>
-            <service type="javax.script.ScriptEngineFactory" provider="bsh.BshScriptEngineFactory"/>
 			<fileset refid="core-fileset"/>
 		</jar>
 	</target>
@@ -378,7 +392,7 @@
 				<attribute name="Implementation-Version" value="${version} ${DATE}" />
 				<attribute name="Implementation-Vendor" value="${Implementation-Vendor}" />
 			</manifest>
-            <service type="javax.script.ScriptEngineFactory" provider="bsh.BshScriptEngineFactory"/>
+            <service type="javax.script.ScriptEngineFactory" provider="bsh.engine.BshScriptEngineFactory"/>
 			<fileset refid="core-fileset"/>
 			<fileset refid="classpath-fileset"/>
 			<fileset refid="reflect-fileset"/>
@@ -386,6 +400,7 @@
 			<fileset refid="util-fileset"/>
 			<fileset refid="commands-fileset"/>
 			<fileset refid="bsf-fileset"/>
+			<fileset refid="engine-fileset"/>
 			<fileset refid="classgen-fileset"/>
 <!-- hack, see core-fileset -->
 			<fileset dir="${build-dir}">
@@ -462,6 +477,12 @@
 			<param name="target-jar" value="${bsf-jar}"/>
 			<param name="specification-title" value="BeanShell bsf"/>
 			<param name="fileset" value="bsf-fileset"/>
+		</antcall>
+
+		<antcall target="jarfileset">
+			<param name="target-jar" value="${engine-jar}"/>
+			<param name="specification-title" value="BeanShell JSR223 Engine"/>
+			<param name="fileset" value="engine-fileset"/>
 		</antcall>
 
 		<antcall target="jarfileset">
