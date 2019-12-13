@@ -755,10 +755,10 @@ public class Interpreter
 		throws EvalError 
 	{
 
-		String s = ( statements.endsWith(";") ? statements : statements+";" );
+		String s = ( statements.matches(".*;\\s*") ? statements : statements+";" );
 		return eval( 
 			new StringReader(s), nameSpace, 
-			"inline evaluation of: ``"+ showEvalString(s)+"''" );
+			"inline evaluation of: '"+ showEvalString(s)+"'" );
 	}
 
 	private String showEvalString( String s ) {
