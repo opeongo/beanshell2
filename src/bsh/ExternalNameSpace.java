@@ -144,7 +144,7 @@ public class ExternalNameSpace extends NameSpace
 			// we'll wrap it and pass it along.  Else we'll use the local
 			// version.
 			if ( localVar == null ) 
-				var = new Variable( name, (Class)null, value, (Modifiers)null );
+				var = createVariable( name, (Class)null, value, (Modifiers)null );
 			else
 				var = localVar;
 		}
@@ -152,7 +152,21 @@ public class ExternalNameSpace extends NameSpace
 		return var;
     }
 	
-	/**
+	public Variable createVariable(
+		String name, Class type, Object value, Modifiers mods ) throws UtilEvalError
+	{
+		LHS lhs = new LHS( externalMap, name );
+		// Is this race condition worth worrying about?
+		// value will appear in map before it's really in the interpreter
+		try {
+			lhs.assign( value, false/*strict*/ );
+		} catch ( UtilEvalError e) {
+			throw new InterpreterError( e.toString() );
+		}
+		return new Variable( name, type, value, mods );
+	}
+
+   /**
 	*/
 	/*
 		Note: the meaning of getDeclaredVariables() is not entirely clear, but
