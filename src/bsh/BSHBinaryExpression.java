@@ -49,7 +49,8 @@ class BSHBinaryExpression extends SimpleNode
     public Object eval( CallStack callstack, Interpreter interpreter)  
 		throws EvalError
     {
-        Object lhs = ((SimpleNode)jjtGetChild(0)).eval(callstack, interpreter);
+       SimpleNode lhsNode = ((SimpleNode)jjtGetChild(0));
+       Object lhs = lhsNode.eval(callstack, interpreter);
 
 		/*
 			Doing instanceof?  Next node is a type.
@@ -120,7 +121,8 @@ class BSHBinaryExpression extends SimpleNode
 			do binary op
 		*/
 		boolean isLhsWrapper = isWrapper( lhs );
-        Object rhs = ((SimpleNode)jjtGetChild(1)).eval(callstack, interpreter);
+	SimpleNode rhsNode = ((SimpleNode)jjtGetChild(1));
+        Object rhs = rhsNode.eval(callstack, interpreter);
 		boolean isRhsWrapper = isWrapper( rhs );
 		if ( 
 			( isLhsWrapper || isPrimitiveValue( lhs ) )
@@ -197,12 +199,13 @@ class BSHBinaryExpression extends SimpleNode
                 if(lhs instanceof Primitive || rhs instanceof Primitive)
                     if ( lhs == Primitive.VOID || rhs == Primitive.VOID )
                         throw new EvalError(
-				"illegal use of undefined variable, class, or 'void' literal", 
-							this, callstack );
+				"Illegal use of undefined variable, class, or 'void' literal",
+				((lhs == Primitive.VOID)?lhsNode:rhsNode), callstack );
                     else 
 					if ( lhs == Primitive.NULL || rhs == Primitive.NULL )
                         throw new EvalError(
-				"illegal use of null value or 'null' literal", this, callstack);
+				"Illegal use of null value or 'null' literal",
+				((lhs == Primitive.VOID)?lhsNode:rhsNode), callstack);
 
                 throw new EvalError("Operator: '" + tokenImage[kind] +
                     "' inappropriate for objects", this, callstack );

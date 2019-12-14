@@ -77,7 +77,7 @@ class BSHAssignment extends SimpleNode implements ParserConstants
         rhs = rhsNode.eval(callstack, interpreter);
 
         if ( rhs == Primitive.VOID )
-            throw new EvalError("Void assignment.", this, callstack );
+	   throw new EvalError("The object on the right hand side of the assignment is undefined", rhsNode, callstack );
 
 		try {
 			switch(operator)
