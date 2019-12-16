@@ -1,22 +1,10 @@
-This is the fork of [beanshell.org](http://www.beanshell.org/) called Beanshell2 which lived between 2011 and
-2014 at [code.google.com](https://code.google.com/p/beanshell2). The motivation of the fork was that the
-original author was no longer maintaining it.
-
-In 2015 the repository moved here when Google retired their code hosting site. 
-
-The old version is again maintained at [github.com/beanshell](https://github.com/beanshell). There is some
-ongoing effort to integrate the changes and improvements made to the project there. 
-
-The development branch here is [v2.1](https://github.com/pejobo/beanshell2/tree/v2.1), the latest 'released'
-version is 
-[2.1.9](https://github.com/pejobo/beanshell2/raw/v2.1/dist/bsh-2.1.9.jar)
-which maps to commit
-[a70056fbe9727d8eadf8e21f3089cbe9f4f0913e](https://github.com/pejobo/beanshell2/commit/a70056fbe9727d8eadf8e21f3089cbe9f4f0913e).
-
-See [releases page](https://github.com/pejobo/beanshell2/dist/README.md) for more information.
-
-For contributing: Please post your pull requests against branch [v2.1](https://github.com/pejobo/beanshell2/tree/v2.1).
-There is an ongoing effort to change the licence to [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0) 
-(see also issue #110), so all contributions will be dual licenced.
+This is a fork of Beanshell2, as of versions [v2.1.9+](https://github.com/pejobo/beanshell2/tree/v2.1).
+Please see [that version](https://github.com/pejobo/beanshell2) for the project history.  
+It appears that development of that project has ceased 
+and effort is now going towards the [Beanshell 3 project](https://github.com/beanshell).  Check there to 
+see what is going on.
 
 
+This repository contains the latest 2.1.9+ release plus a few patches to improve error messages, 
+better support the JSR 223 script engine interface, and to provide support for scripting inner class
+that have parameters.
