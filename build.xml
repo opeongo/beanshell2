@@ -201,6 +201,7 @@
 			source="${ant.build.javac.source}"
 			target="${ant.build.javac.target}"
 	                bootclasspathref="javabootclasspath"
+                        includeAntRuntime="false"
 		>
 			<classpath>
 				<fileset refid="lib-fileset"/>
