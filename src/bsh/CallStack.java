@@ -79,7 +79,7 @@ public final class CallStack implements Serializable {
 	}
 
 	public NameSpace top() {
-		return stack.peek();
+           return get(0);
 	}
 
 	/**
